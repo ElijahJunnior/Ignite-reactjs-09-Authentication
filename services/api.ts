@@ -1,9 +1,10 @@
 import axios, { AxiosError } from "axios";
 import { parseCookies, setCookie } from 'nookies';
+import { signOut } from "../contexts/AuthContext";
 
 const { 'nextauth.token': token } = parseCookies();
-let isRefreshing = false; console.log(':::: isRefresing = false ::::');
-let failedRequestQueue = [];
+let isRefreshing = false;
+let failedRequestsQueue = [];
 
 export const api = axios.create({
   baseURL: 'http://localhost:3333',
@@ -31,12 +32,11 @@ api.interceptors.response.use(response => {
         const { 'nextauth.refreshToken': refreshTokenOLD } = parseCookies();
 
         api.post('/refresh', {
-          refreshTokenOLD,
+          refreshToken: refreshTokenOLD,
         }).then(response => {
 
-          const { token, refreshToken } = response.data;
-
-          console.log('::: POST -> /refresh :::');
+          const token = response?.data?.token
+          const refreshToken = response?.data?.refreshToken
 
           setCookie(undefined, 'nextauth.token', token, {
             maxAge: 60 * 60 * 24 * 30, // 30 Dias
@@ -50,15 +50,15 @@ api.interceptors.response.use(response => {
 
           api.defaults.headers['Authorization'] = `Bearer ${token}`;
 
-          failedRequestQueue.forEach(request => request.onSuccess(token));
+          failedRequestsQueue.forEach(request => request.onSuccess(token));
 
-          failedRequestQueue = [];
+          failedRequestsQueue = [];
 
         }).catch((err) => {
 
-          failedRequestQueue.forEach(request => request.onFailure(err));
+          failedRequestsQueue.forEach(request => request.onFailure(err));
 
-          failedRequestQueue = [];
+          failedRequestsQueue = [];
 
         }).finally(() => {
 
@@ -69,7 +69,7 @@ api.interceptors.response.use(response => {
       }
 
       return new Promise((resolve, reject) => {
-        failedRequestQueue.push({
+        failedRequestsQueue.push({
           onSuccess: (token: string) => {
             originalConfig.headers['Authorization'] = `Bearer ${token}`;
             resolve(api(originalConfig));
@@ -81,9 +81,12 @@ api.interceptors.response.use(response => {
       });
 
     } else {
-      // desloga da aplicação
+      signOut();
     }
 
   }
+
+  // Caso o erro não tenha sido tratado pela função passa ele pra frente
+  return Promise.reject(error);
 
 })
