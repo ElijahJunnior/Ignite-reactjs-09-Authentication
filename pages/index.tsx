@@ -1,5 +1,12 @@
+// REACT / NEXT
+import { GetServerSideProps } from "next";
 import { FormEvent, useContext, useState } from "react"
+
+// COMPONENTS
 import { AuthContext } from "../contexts/AuthContext";
+import { WithSSRGest } from "../utils/WithSSRGest";
+
+// STYLING
 import styles from '../styles/Home.module.css';
 
 export default function Home() {
@@ -31,3 +38,11 @@ export default function Home() {
   )
 
 }
+
+export const getServerSideProps = WithSSRGest(async (ctx) => {
+
+  return {
+    props: {}
+  }
+
+})
