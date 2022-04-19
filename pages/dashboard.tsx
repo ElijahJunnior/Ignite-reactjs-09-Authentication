@@ -1,7 +1,14 @@
+// REACT / NEXT
 import { useContext, useEffect } from "react"
+
+// CONTEXTS
 import { AuthContext } from "../contexts/AuthContext"
+
+// SERVICES
 import { api } from "../services/apiClient";
 import { setupApiClient } from "../services/api";
+
+// OTHERS
 import { WithSSRAuth } from "../utils/WithSSRAuth";
 
 export default function Dashboard() {
@@ -22,6 +29,7 @@ export default function Dashboard() {
 export const getServerSideProps = WithSSRAuth(async (ctx) => {
 
   const apiClient = setupApiClient(ctx)
+
   const me = await apiClient.get('/me').then(res => res?.data || '');
 
   return {
