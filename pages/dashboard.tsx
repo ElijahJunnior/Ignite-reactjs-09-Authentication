@@ -2,7 +2,7 @@
 import { useContext, useEffect } from "react"
 
 // CONTEXTS
-import { AuthContext, signOut } from "../contexts/AuthContext"
+import { AuthContext } from "../contexts/AuthContext"
 
 // SERVICES
 import { api } from "../services/apiClient";
@@ -14,7 +14,7 @@ import { Can } from "../components/can";
 
 export default function Dashboard() {
 
-  const { user } = useContext(AuthContext);
+  const { user, signOut } = useContext(AuthContext);
 
   useEffect(() => {
     api.get('/me')
